@@ -1,10 +1,11 @@
 /* local header files */
+#include <iostream>
 #include "stdlib.h"
 #include "stdio.h"
 #include <math.h>
 #include <string.h>
-
-
+//#include <string>
+#include <ctype.h>
 
     
 
@@ -59,12 +60,14 @@ void test_closeSQRT()
   printf("%d\n", closeSQRT(15));
 }
 
-double sqrt2(double n)
+double sqrt2(double n)		/* old version is wrong, your test cases are so limited */
 {
   if (n < 0) return -1;
+  if (n ==0 || n == 1) return n;
   double p = 0.00001;
   double low = 0., high = n/2.;
   double m;
+  if (n < 1) high = 1;
   while (low < high)
   {
     m = (low + high)/2.;
@@ -79,7 +82,7 @@ double sqrt2(double n)
 }
 void test_sqrt2()
 {
-  printf("%f\n", sqrt2(16.));
+  printf("%f\n", sqrt2(0.4));
 }
 
 void bestStock(int *a, int size, int *buy, int *sell)
@@ -581,7 +584,7 @@ void reverseString4( char *str)
  void testreverseString4()
  {
    char *s = (char *)malloc(10);
-   strcpy(s, "123456");
+   /* strcpy(s, "123456"); */
    printf("%s\n", s);
    reverseString4(s);
    printf("\n%s\n", s);
@@ -734,18 +737,213 @@ ListNode *removeNthFromEnd(ListNode *head, int n)
     (*back)->next = temp;
     return head;
 }
+
+/* 4/2/2013 */
+/* the reverse of list (1 -> remaining list) will be reverse (remaining list -> 1)
+   reverse(1-2-3-4) euqals to reverse(2-3-4)->1
+*/
+ListNode *reverseList_recursive(ListNode *list)
+{
+    if (list == NULL || list->next == NULL)
+	return list;
+    ListNode *reserve = reverseList_recursive(list->next);
+
+    /* need to find the tail of remainingReverse and update the tail as our beginning element */
+    ListNode *cur = reserve;
+    while (cur->next != NULL)
+	cur = cur->next;
+
+    /* assign beginning element in original list to reversed list tail */
+    cur->next = list;
+
+    /* update beginning element list next to NULL */
+    list->next = NULL;
+    return reserve;
+}
+
+
+/* 4/3/2013 */
+
+void printParenthsis(int left, int right, char *s, int pairs)
+{
+    if (left == pairs &&right == pairs)
+    {
+	printf("%s\n", s);
+	/* s[0]='\0'; */
+	/* return; */
+    }
+    else{
 	
+    if (left < pairs)
+    {
+	/* printParenthsis(left + 1, right, strcat(s, "("), pairs); */
+	/* if (left < right) */
+	    /* printParenthsis(left, right - 1, strcat(s, ")")); */
+    }
+    if (right < pairs)
+	;	/* printParenthsis(left, right +1, strcat(s, ")"), 3); */
+    }
+}
+
+void testPrintParent()		/* Wrong~~~~~~ */
+{
+    char *s = (char *)malloc(3*3);
+     s[6] = '\0'; 
+     printParenthsis(0,0,s, 3);
+}
+
+/* 4/8/2013 */
+void reverseS(char *s, int start, int end)
+{
+    char temp;
+    while (start < end)
+    {
+	temp = s[start];
+	s[start] = s[end];
+	s[end] = temp;
+	start++;
+	end--;
+    }
+}
+char * reverseString(char *s)
+{
+    char size = strlen(s);
+    int i, j = 0;
+    reverseS(s, 0, size-1);
+
+    for (i = 0; i <= size; i++)
+    {
+	if (s[i] == ' '  || s[i] == '\0')
+	{
+	    reverseS(s, j, i-1);
+	    j = i + 1;
+	}
+    }
+    return s;
+}
+void testreverseString()
+{
+    char *a = (char *)malloc(10 * sizeof(char));
+    strcpy(a, "abc def");
+    printf("%s\n", reverseString(a));
+    free(a);
+}
+
+
+/* 4/9/2013 */
+int lengthLongestSubString(char *s, int size) /* this one is wrong, think of "abcabcda, should return abcd, but failed */
+{
+    if (size <= 1) return size;
+    if (s == NULL) return -1;
+    int i, count = 0, temp = 0;
+    int a[256] = {0};
+    /* for (i = 0; i < 256; i++) */
+    /* { */
+    /* 	a[i] = -1; */
+    /* } */
+    for (i = 0; i < size; i++)
+    {
+	if (a[s[i]] == 0)
+	{
+	    a[s[i]] = 1;
+	    count++;
+	 
+	}
+	else
+	{
+	    if (temp < count)
+		temp = count;
+	    count = 0;
+	}
+    }
+    if (temp < count) return count;
+    return temp;
+}
+
+int lengthLongestSubString2(char *s, int size) /* correct version */
+{
+    if (size <= 1) return size;
+    int i, j = 0, count, temp = 0;
+    int map[256] = {0};
+
+    for (i = 0; i < size; i++)
+    {
+	if (map[s[i]] == 0)
+	{
+	    map[s[i]] = 1;
+	}
+	else
+	{
+	    count = i-j;
+	    if (temp < count)
+		temp = count;
+	    while (s[j] != s[i])
+	    {
+		map[s[j]] = 0;
+		j++;
+	    }
+	    j++;
+	}
+    }
+    if (temp < (i-j)) return (i-j);
+    return temp;
+}
+
+void testlengthLongestSubString()
+{
+    char s[6];
+    strcpy(s, "abcabcde");
+    printf("lognest:%d\n",lengthLongestSubString2(s, 9));
+}
+
+/* 4/10/2013 */
+
+int isPalindrome(char *s)
+{
+    int size = strlen(s);
+    if (size <= 1) return 1;
+    int front = 0, back = size -1;
+    while (front < back)
+    {
+	if (isalpha(s[front]) && isalpha(s[back]))
+	{
+	    if (s[front] == s[back] || abs(s[front]-s[back]) == 32)
+	    {
+		front++;
+		back--;
+	    }
+	    else
+		return 0;
+	}
+	if (!isalpha(s[front]))
+	    front++;
+	if (!isalpha(s[back]))
+	    back--;
+    }
+    return 1;
+}
+void testisPalindrome()
+{
+    printf("%d\n", isPalindrome("1a2"));
+}
 /*
  *  ======== main ========
  */
 
 int main(int argc, char* argv[])
 {
+    testisPalindrome();
+    
+    
     ListNode *list = NULL;//(ListNode*)malloc(sizeof(ListNode));
     createList(&list);
-    ListNode *list3 = removeNthFromEnd(list, 4);
+    ListNode *list3 = reverseList_recursive(list);
     printList(list3);
   return 0;
+    testlengthLongestSubString();
+  //tetestreverseString();
+  //testPrintParent();st_sqrt2();
+    removeNthFromEnd(list, 4);
     //ListNode *list2 = reverseList(list);
     //removeOneNode(&list2, 11);
     /* ListNode *list3 = reverseBetween(list, 2,5); */
@@ -763,7 +961,6 @@ int main(int argc, char* argv[])
   test_sum2value();
   test_palindrom();
   test_bestStock();
-  test_sqrt2();
   test_closeSQRT();
   test_reverse_int();
 }

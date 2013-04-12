@@ -1,2 +1,2 @@
 all:
-	g++ test.c
+	g++ -g2 test.c
